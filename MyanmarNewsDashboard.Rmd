@@ -1,0 +1,288 @@
+---
+title: "Myanmar News Coverage Analysis"
+output:
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+    theme: yeti
+    source_code: https://github.com/SanHtet-Sanpai/Myanmar_News_R_Project
+runtime: shiny
+resource_files:
+- news_scrapping.R
+---
+
+```{r setup, include=FALSE}
+
+source("analysis.R")
+library(flexdashboard)
+
+news <- GetData()
+tidy_news <- GetTidyData(news)
+topwords <- get_topwords(tidy_news)
+topsources <- get_topsources(news)
+avg_sent <- get_avg_sent(news, tidy_news)
+time_sent <- get_time_sent(news, tidy_news)
+
+```
+
+
+Words
+=========================================================================
+
+col1 {.sidebar}
+-----------------------------------------------------------------------
+Adjust the parameters of the plots on the right here.
+
+```{r Shiny inputs, warning=TRUE}
+
+sliderInput("max_words", "Number of Top Words", 
+            min = 2, max = 35, value = 10)
+
+sliderInput("max_sources", "Number of Top Sources", 
+            min = 2, max = 35, value = 10)
+
+sliderInput("hm_words", "Number of Top Words for Heatmap", 
+            min = 2, max = 35, value = 10)
+
+sliderInput("hm_sources", "Number of Top Sources for Heatmap",
+            min = 2, max = 35, value = 10)
+
+numericInput("wc_words", "Number of Top Words for Wordcloud", 200,
+              min = 2)
+
+```
+
+
+col2 {.tabset}
+-------------------------------------------------------------------------
+
+### Top Words
+
+```{r Top Words, warning=TRUE}
+
+
+renderPlotly({
+  
+  ggplotly(ggplot(topwords[1:input$max_words, ], aes(n, word)) + 
+             geom_col(aes(fill=n)) +
+             theme_minimal()+
+             scale_fill_distiller(direction = 1, palette = "Set1")+
+             labs(y = "Word", x = "Frequency", fill = NULL)
+         )
+  
+})
+```
+
+### Top Sources
+
+```{r Top Sources, warning=TRUE}
+
+renderPlotly({
+  
+  ggplotly( ggplot(topsources[1:input$max_sources,],aes(n, source)) +
+            geom_col(aes(fill=n)) +
+            theme_minimal()+
+            scale_fill_distiller(direction = 1, palette = "Set1")+
+            labs(y = "Source", x = "Number of Articles", fill = NULL)
+          )
+  
+
+})
+```
+
+### Heatmap of Top Words and Top Sources
+
+```{r Heatmap, warning=TRUE}
+
+
+renderPlotly({
+  
+  ggplotly(ggplot(get_heatmap_data(tidy_news, topsources, topwords,
+                                   hm_xlim=input$hm_sources, 
+                                   hm_ylim =  input$hm_sources),
+                  aes(x = source, y = word, fill =n))+
+             geom_tile(aes(text = paste("usage frequency:", n))) +
+             scale_fill_viridis(discrete = F, option = "D") +
+             theme(axis.text.x = element_blank()) +
+             labs(y = "Word", x = "Source", fill = "Frequency"),
+           tooltip = c("text", "x", "y")
+         )
+  
+})
+
+```
+
+
+### Wordcloud
+
+```{r wordcloud, warning=TRUE}
+
+renderWordcloud2({
+  
+  wordcloud2(topwords[1:input$wc_words, ], shape = "pentagon",
+             color= c("#2D5EDB", "#DB2DB6",	"#DBAA2D", "#2DDB52")
+             )
+  
+})
+```
+
+col4 {data-width=40}
+-------------------------------------------------------------------------
+
+### Sources
+
+```{r value box sources, warning=TRUE}
+
+renderValueBox({
+ valueBox(length(levels(news$source)), icon = "ion-newspaper-outline", 
+          color = "#C1C74C")
+})
+
+
+```
+
+### Articles {data-width=40}
+
+```{r value box articles, warning=TRUE}
+
+renderValueBox({
+ valueBox(length(news$title), icon = "ion-document-text-outline",
+          color = "#4CC790")
+})
+
+
+```
+
+### From {data-width=40}
+
+```{r value box start, warning=TRUE}
+
+renderValueBox({
+ valueBox(as.Date(min(news$date)), icon = "ion-calendar-outline", 
+          color = "#524CC7")
+})
+
+```
+
+### To {data-width=40}
+
+```{r value box end, warning=TRUE}
+
+renderValueBox({
+ valueBox(as.Date(max(news$date)), icon = "ion-calendar-outline", 
+          color = "#C74C84")
+})
+
+```
+
+### Duration in Days {data-width=40}
+
+```{r value box duration, warning=TRUE}
+
+renderValueBox({
+ valueBox(as.integer(difftime(max(news$date), min(news$date)), 
+                     unit = "day"), 
+          icon = "ion-calendar-clear-outline",
+          color = "#C7904C"
+          )
+})
+
+```
+
+Sentiments(Scaled)
+=========================================================================
+
+col1 {.tabset}
+-------------------------------------------------------------------------
+
+### Avgerage sentiment by source
+
+```{r avg sent source, warning=TRUE}
+
+renderPlotly({
+  
+
+  ggplotly(ggplot(avg_sent, aes(Source, Sentiment, 
+                                               fill = Lexicon)) +
+            geom_col(show.legend = FALSE) +
+            scale_fill_manual(values=c("#C1C74C", "#4CC7C7", "#4C6CC7"))+
+            facet_wrap(~Lexicon, ncol = 1, scales = "free_y") +
+            ggtitle("Average Sentiment by News Source") +
+            theme_minimal()+
+            theme(axis.text.x=element_blank(),
+                  axis.ticks.x=element_blank()) +
+            labs(y = "Sentiment Score", x = "Source", fill = "Lexicon")
+  )      
+  
+})
+  
+  
+
+```
+
+### Average daily sentiment over Time
+
+```{r daily sent timeline, warning=TRUE}
+
+  
+renderDygraph({
+  
+
+  dygraph(time_sent, main= "Average Daily Sentiment over Time")%>%
+        dyRangeSelector() %>% 
+        dyOptions(stepPlot = TRUE ,colors = c("#C1C74C", "#4CC7C7",
+                                              "#4C6CC7"))   %>% 
+        dyHighlight(highlightSeriesOpts = list(strokeWidth = 3)) %>% 
+        dyEvent("2021-2-2", "Coup", labelLoc = "bottom") %>%
+        dyLimit(0, color="red", strokePattern = "solid" )
+  
+})
+  
+  
+
+```
+
+Data
+=========================================================================
+
+col1 
+-------------------------------------------------------------------------
+### Data Table
+
+```{r datatable, warning=TRUE}
+
+
+renderDataTable({
+  
+  datatable <- news %>% 
+    select(title, source, date, intro, link)
+
+  datatable(datatable, filter = 'top',
+                options =list(autoWidth = T, pageLength = 5))
+  
+})
+
+```
+
+About
+=========================================================================
+**Background**  
+Coup d'état staged by the Tatmadaw (Myanmar Military) back in February has jeopardized the young democracy the country was enjoying, and undermined its development as well as the livelihood of its people.
+
+**Approach**  
+In this project, ~32000 news articles from various news sources were scrapped from the internet and news titles were analyzed.  The project consists of 3 stages-   
+1. Web-scrapping the news  
+2. Cleaning and processing data  
+3. Visualizing the data in a Dashboard  
+  
+Some of the packages used in each stage are  
+1. rvest, dplyr  
+2. readr, dplyr, tidyr, tidytext, xts  
+3. ggplot2, plotly, wordcloud2, DT, dygraphs, viridis  
+
+Dashboard was built as Shiny Interactive Dashboard using Flexdashboard package 
+
+**Qualitative Summary of Analysis**  
+Unsurprisingly, some of the most commonly used words in news title were "coup", "military", "protest", etc. reflecting the political turmoil of the country. In addition, the average sentiment of all articles by each news source for the duration of time data were collected were overwhelmingly negative. In fact, the sentiments of news article titles significantly dropped after Feb 1st - the day the coup was staged. 
+
+

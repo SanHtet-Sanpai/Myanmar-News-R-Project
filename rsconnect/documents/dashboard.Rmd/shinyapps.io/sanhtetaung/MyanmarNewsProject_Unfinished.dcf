@@ -1,0 +1,14 @@
+name: MyanmarNewsProject_Unfinished
+title: MyanmarNewsProject_Unfinished
+username:
+account: sanhtetaung
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 4486606
+bundleId: 4934858
+url: https://sanhtetaung.shinyapps.io/MyanmarNewsProject_Unfinished/
+when: 1629252996.68996
+lastSyncTime: 1629252996.68996
+asMultiple: FALSE
+asStatic: FALSE
+additionalFiles: news_scrapping.R

@@ -1,0 +1,13 @@
+name: myanmarnewsdashboard
+title:
+username:
+account: sanhtetaung
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 4505237
+bundleId: 4943137
+url: https://sanhtetaung.shinyapps.io/myanmarnewsdashboard/
+when: 1629415138.24529
+lastSyncTime: 1629415138.24529
+asMultiple: FALSE
+asStatic: FALSE

@@ -1,0 +1,13 @@
+name: MyanmarNewsProject
+title: MyanmarNewsProject
+username:
+account: sanhtetaung
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 4505137
+bundleId: 4934908
+url: https://sanhtetaung.shinyapps.io/MyanmarNewsProject/
+when: 1629254289.59632
+lastSyncTime: 1629254289.59632
+asMultiple: FALSE
+asStatic: FALSE
