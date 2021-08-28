@@ -63,8 +63,10 @@ col2 {.tabset}
 
 renderPlotly({
   
-  ggplotly(ggplot(topwords[1:input$max_words, ], aes(n, word)) + 
-             geom_col(aes(fill=n)) +
+  ggplotly(ggplot(topwords[1:input$max_words, ], 
+                  aes(x = reorder(word, n), y = n)) + 
+             geom_col(aes(fill=tf_idf)) +
+             coord_flip() +
              theme_minimal()+
              scale_fill_distiller(direction = 1, palette = "Set1")+
              labs(y = "Word", x = "Frequency", fill = NULL)

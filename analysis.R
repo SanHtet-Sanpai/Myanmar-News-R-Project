@@ -44,12 +44,23 @@ return (tidy_news)
 
 get_topwords <- function(df = GetTidyData()){
 
-  df <- df %>% 
-          count(word, sort=T)  %>%
-          filter(!word %in% c("myanmar", "myanmar's", "aung", "san", "suu", "kyi")) %>%
-          mutate(word = reorder(word, n)) 
+  Tf_idf <- df %>%
+    count(source, word) %>%
+    bind_tf_idf(word, source, n) %>% 
+    select(word, tf_idf)
   
-  return(df)
+  Tf_idf <-  aggregate(Tf_idf$tf_idf, by = list(word =Tf_idf$word), 
+                       FUN = mean) %>% 
+    arrange(desc(x)) %>% 
+    rename(tf_idf = x)
+  
+  dt <- df %>% 
+    count(word, sort=T)  %>%
+    filter(!word %in% c("myanmar", "myanmar's", "aung", "san", "suu", "kyi")) %>%
+    mutate(word = reorder(word, n)) %>% 
+    left_join(Tf_idf, by = "word")
+  
+  return(dt)
 }
 
 #top_sources
