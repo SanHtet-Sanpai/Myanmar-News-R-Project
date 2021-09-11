@@ -59,7 +59,7 @@ get_topwords <- function(df = GetTidyData()){
   
   dt <- df %>% 
     count(word, sort=T)  %>%
-    filter(!word %in% c("myanmar", "myanmar's", "aung", "san", "suu", "kyi")) %>%
+    filter(!word %in% c("myanmar", "myanmar's")) %>%
     mutate(word = reorder(word, n)) %>% 
     left_join(Tf_idf, by = "word")
   
