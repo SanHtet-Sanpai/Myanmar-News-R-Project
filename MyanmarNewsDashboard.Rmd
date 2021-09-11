@@ -22,6 +22,7 @@ library(DT)
 library(htmlwidgets)
 library(htmltools)
 library(flexdashboard)
+library(dplyr)
 
 load("news_data.RData")
 ```
@@ -109,7 +110,7 @@ renderPlotly({
              geom_tile(aes(text = paste("usage frequency:", n))) +
              scale_fill_viridis(discrete = F, option = "D") +
              theme(axis.text.x = element_blank()) +
-             labs(y = "Word", x = "Source", fill = "Frequency"),
+             labs(y = "Word", x = "Source", fill = NULL),
            tooltip = c("text", "x", "y")
          )
   
@@ -125,7 +126,7 @@ renderPlotly({
 renderWordcloud2({
   
   wordcloud2(topwords[1:input$wc_words, ], shape = "pentagon",
-             color= random-light)
+             color= "random-dark")
   
 })
 ```
