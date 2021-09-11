@@ -4,14 +4,6 @@ library(tidytext)
 library(tidyr)
 library(textdata)
 
-library(ggplot2)
-library(viridis)
-library(plotly)
-library(dygraphs)
-library(xts)
-library(wordcloud2)
-library(DT)
-
 GetData <- function( file = 'news.csv'){
   
 news <- read_csv(file)
