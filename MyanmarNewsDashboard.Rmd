@@ -7,22 +7,23 @@ output:
     theme: yeti
     source_code: https://github.com/SanHtet-Sanpai/Myanmar_News_R_Project
 runtime: shiny
-resource_files:
-- news_scrapping.R
+
 ---
 
-```{r setup, include=FALSE}
+```{r setup, include=FALSE, cache=TRUE}
 
-source("analysis.R")
+library(ggplot2)
+library(viridis)
+library(plotly)
+library(dygraphs)
+library(xts)
+library(wordcloud2)
+library(DT)
+library(htmlwidgets)
+library(htmltools)
 library(flexdashboard)
 
-news <- GetData()
-tidy_news <- GetTidyData(news)
-topwords <- get_topwords(tidy_news)
-topsources <- get_topsources(news)
-avg_sent <- get_avg_sent(news, tidy_news)
-time_sent <- get_time_sent(news, tidy_news)
-
+load("news_data.RData")
 ```
 
 
@@ -35,19 +36,19 @@ Adjust the parameters of the plots on the right here.
 
 ```{r Shiny inputs, warning=TRUE}
 
-sliderInput("max_words", "Number of Top Words", 
+shiny::sliderInput("max_words", "Number of Top Words", 
             min = 2, max = 35, value = 10)
 
-sliderInput("max_sources", "Number of Top Sources", 
+shiny::sliderInput("max_sources", "Number of Top Sources", 
             min = 2, max = 35, value = 10)
 
-sliderInput("hm_words", "Number of Top Words for Heatmap", 
+shiny::sliderInput("hm_words", "Number of Top Words for Heatmap", 
             min = 2, max = 35, value = 10)
 
-sliderInput("hm_sources", "Number of Top Sources for Heatmap",
+shiny::sliderInput("hm_sources", "Number of Top Sources for Heatmap",
             min = 2, max = 35, value = 10)
 
-numericInput("wc_words", "Number of Top Words for Wordcloud", 200,
+shiny::numericInput("wc_words", "Number of Top Words for Wordcloud", 200,
               min = 2)
 
 ```
@@ -69,7 +70,7 @@ renderPlotly({
              coord_flip() +
              theme_minimal()+
              scale_fill_distiller(direction = 1, palette = "Set1")+
-             labs(y = "Word", x = "Frequency", fill = NULL)
+             labs(y = "Word", x = "Frequency", fill = "tf idf score")
          )
   
 })
@@ -85,7 +86,8 @@ renderPlotly({
             geom_col(aes(fill=n)) +
             theme_minimal()+
             scale_fill_distiller(direction = 1, palette = "Set1")+
-            labs(y = "Source", x = "Number of Articles", fill = NULL)
+            labs(y = "Source", x = "Number of Articles", 
+                 fill = "Number of Articles")
           )
   
 
@@ -99,10 +101,11 @@ renderPlotly({
 
 renderPlotly({
   
-  ggplotly(ggplot(get_heatmap_data(tidy_news, topsources, topwords,
-                                   hm_xlim=input$hm_sources, 
-                                   hm_ylim =  input$hm_sources),
-                  aes(x = source, y = word, fill =n))+
+  heatmap <- heatmap %>% 
+    semi_join(topsources[1:input$hm_sources,], by = "source") %>%
+    semi_join(topwords[1:input$hm_words,], by = "word") 
+  
+  ggplotly(ggplot(heatmap, aes(x = source, y = word, fill =n))+
              geom_tile(aes(text = paste("usage frequency:", n))) +
              scale_fill_viridis(discrete = F, option = "D") +
              theme(axis.text.x = element_blank()) +
@@ -122,8 +125,7 @@ renderPlotly({
 renderWordcloud2({
   
   wordcloud2(topwords[1:input$wc_words, ], shape = "pentagon",
-             color= c("#2D5EDB", "#DB2DB6",	"#DBAA2D", "#2DDB52")
-             )
+             color= random-light)
   
 })
 ```
@@ -201,6 +203,7 @@ col1 {.tabset}
 
 ```{r avg sent source, warning=TRUE}
 
+
 renderPlotly({
   
 
@@ -226,7 +229,7 @@ renderPlotly({
 
 ```{r daily sent timeline, warning=TRUE}
 
-  
+
 renderDygraph({
   
 
@@ -282,7 +285,9 @@ Some of the packages used in each stage are
 2. readr, dplyr, tidyr, tidytext, xts  
 3. ggplot2, plotly, wordcloud2, DT, dygraphs, viridis  
 
-Dashboard was built as Shiny Interactive Dashboard using Flexdashboard package 
+Dashboard was built as Shiny Interactive Dashboard using Flexdashboard package. tidytext package was used instead of other popular textmining packages such as tm since the analysis is only performed on news title and no ML model will be used as well as easier work required to create beautiful visualizations. 
+
+The project is constrained in that only titles of news were analyzed and not the actual news body. This is because it is quite difficult (for me at least) to web-scrap news body from hundreds of news sources, each with their own web layout.
 
 **Qualitative Summary of Analysis**  
 Unsurprisingly, some of the most commonly used words in news title were "coup", "military", "protest", etc. reflecting the political turmoil of the country. In addition, the average sentiment of all articles by each news source for the duration of time data were collected were overwhelmingly negative. In fact, the sentiments of news article titles significantly dropped after Feb 1st - the day the coup was staged. 

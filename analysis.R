@@ -20,6 +20,9 @@ news <- mutate(news, date = as.POSIXct(date, format = "%Y-%m-%d %H:%M", tz = "GM
   mutate(news, source = as.factor(source)) %>% 
   distinct()
 
+news <- news[!duplicated(news[ ,  c("title", "source")]), ]
+
+
 return (news)
 }
 
@@ -74,14 +77,12 @@ get_topsources <- function(dt = GetData()) {
 
 #word_source_heatmap
 
-get_heatmap_data <- function( heatmapdata = GetTidyData(), ts = get_topsources(), tw= get_topwords(), hm_xlim =20, hm_ylim =20) {
+get_heatmap_data <- function( heatmapdata = GetTidyData(), ts = get_topsources(), tw= get_topwords()) {
 
   heatmapdata <- heatmapdata %>% 
                   count(word, source, sort=T) %>% 
                   filter(!word %in% c("myanmar", "myanmar's", "aung", "san", "suu", "kyi")) %>%
-                  mutate(word = reorder(word, n)) %>% 
-                  semi_join(ts[1:hm_xlim,], by = "source") %>% 
-                  semi_join(tw[1:hm_ylim,], by = "word") 
+                  mutate(word = reorder(word, n))
  
  return(heatmapdata)
  
@@ -165,3 +166,14 @@ timeline_xts <- xts(x= timeline[,-1], order.by = timeline$Time)
 
 return(timeline_xts)
 }
+
+news <- GetData()
+tidy_news <- GetTidyData(news)
+topwords <- get_topwords(tidy_news)
+topsources <- get_topsources(news)
+heatmap <- get_heatmap_data(tidy_news, topsources, topwords)
+avg_sent <- get_avg_sent(news, tidy_news)
+time_sent <- get_time_sent(news, tidy_news)
+
+save(news, tidy_news, topwords, topsources, heatmap, avg_sent, time_sent,
+     file = "news_data.RData")

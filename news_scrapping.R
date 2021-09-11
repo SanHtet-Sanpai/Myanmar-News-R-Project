@@ -3,7 +3,7 @@ library(dplyr)
 
 news = data.frame()
 
-for (page_number in seq(from = 0, to = 3150, by = 1))
+for (page_number in seq(from = 0, to = 3200, by = 1))
 {
   url=paste0("https://newslookup.com/results?p=",page_number,"&q=myanmar&dp=5&mt=-1&ps=10&s=&cat=-1&fmt=&groupby=no&site=&dp=5&tp=-720")
   page = read_html(url)
