@@ -5,7 +5,7 @@ output:
     orientation: columns
     vertical_layout: fill
     theme: yeti
-    source_code: https://github.com/SanHtet-Sanpai/Myanmar_News_R_Project
+    source_code: https://github.com/SanHtet-Sanpai/Myanmar-News-R-Project
 runtime: shiny
 
 ---
