@@ -95,6 +95,7 @@ renderPlotly({
 })
 ```
 
+
 ### Heatmap of Top Words and Top Sources
 
 ```{r Heatmap, warning=TRUE}
@@ -247,6 +248,22 @@ renderDygraph({
   
 
 ```
+
+### Number of Daily Articles
+
+```{r Number of Articles, warning=TRUE}
+
+renderDygraph({
+  
+  dygraph(time_article,  main= "Number of Articles over Time") %>% 
+    dyOptions( drawPoints = TRUE, pointSize = 4 ) %>% 
+    dyRangeSelector()
+  
+})
+
+```
+
+
 
 Data
 =========================================================================

@@ -3,6 +3,7 @@ library(readr)
 library(tidytext)
 library(tidyr)
 library(textdata)
+library(xts)
 
 GetData <- function( file = 'news.csv'){
   
@@ -159,6 +160,17 @@ timeline_xts <- xts(x= timeline[,-1], order.by = timeline$Time)
 return(timeline_xts)
 }
 
+get_time_article <- function( dt1 = GetData() ) {
+  
+time_articles <- dt1 %>% 
+  mutate(date = (as.Date(date, format = "%Y-%m-%d"))) %>%
+  count(date)
+
+df <- xts(x= time_articles[,-1], order.by = time_articles$date)
+
+  return(df)
+}
+
 news <- GetData()
 tidy_news <- GetTidyData(news)
 topwords <- get_topwords(tidy_news)
@@ -166,6 +178,8 @@ topsources <- get_topsources(news)
 heatmap <- get_heatmap_data(tidy_news, topsources, topwords)
 avg_sent <- get_avg_sent(news, tidy_news)
 time_sent <- get_time_sent(news, tidy_news)
-
-save(news, tidy_news, topwords, topsources, heatmap, avg_sent, time_sent,
+time_article <- get_time_article(news)
+  
+save(news, tidy_news, topwords, topsources, heatmap, 
+     avg_sent, time_sent, time_article,
      file = "news_data.RData")
