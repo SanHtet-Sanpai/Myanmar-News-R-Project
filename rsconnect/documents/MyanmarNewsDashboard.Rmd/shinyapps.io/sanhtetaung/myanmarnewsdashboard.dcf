@@ -5,9 +5,9 @@ account: sanhtetaung
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 4505237
-bundleId: 5023336
+bundleId: 5036599
 url: https://sanhtetaung.shinyapps.io/myanmarnewsdashboard/
-when: 1631385101.60987
-lastSyncTime: 1631385101.60987
+when: 1631724891.44645
+lastSyncTime: 1631724891.44645
 asMultiple: FALSE
 asStatic: FALSE
